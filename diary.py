@@ -67,12 +67,16 @@ def search_file(infile, pattern, text):
 			print ("%s -- %s" % (file_name[-1], line))
 
 def get_diary_folder():
-	if diary_folder[-1] == '/':
-		return diary_folder
-	return diary_folder + '/'
+	if diary_folder:
+		if diary_folder[-1] == '/':
+			return diary_folder
+		return diary_folder + '/'
+	return False
 
 def diary_folder_exists():
-	return os.path.isdir(get_diary_folder())
+	if get_diary_folder() != False:
+		return os.path.isdir(get_diary_folder())
+	return False
 
 
 def help(argument):
