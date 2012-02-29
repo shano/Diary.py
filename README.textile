@@ -1,0 +1,18 @@
+h1. DIARY.PY A command line diary tool
+
+A simple and extensible shell script for managing your diary entries
+
+h2. "Downloads":https://github.com/shanedowling/Diary.py/downloads
+
+h2. What it does
+Creates a separate diary entry for each file so 2012-02-29.txt.
+
+You can create, search and list todays entries easily.
+
+h2. Installation
+	1. Make sure python is installed.
+	2. Download diary.py
+	3. Create a folder to store your diary text files in
+	4. Edit diary.py and add the newly created folder into diary_folder setting at the top
+	5. Run python diary.py.
+	6. (Optional) Create a bash alias alias d='python /home/user/scripts/diary.py'
