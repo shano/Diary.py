@@ -1,12 +1,32 @@
 #!/usr/bin/python
 import sys, os, datetime, glob
-diary_folder = ""
-now = datetime.datetime.now()
+from subprocess import call
+
+# Set this to something if you wish to use truecrypt
+TRUECRYPT_VOLUME = ""
+# If using truecrypt ensure this points to the truecrypt mounted folder
+DIARY_FOLDER = ""
+EDITOR = os.environ.get('EDITOR','vim')
+
+ED_ENABLED = False
+if len(EDITOR) > 0:
+	ED_ENABLED = True
+
+TRUECRYPT_ENABLED = False
+if len(TRUECRYPT_VOLUME) > 0:
+	TRUECRYPT_BINARY = os.popen("which truecrypt").read().rstrip('\n')
+	if TRUECRYPT_BINARY != 0 and len(TRUECRYPT_BINARY) > 0:
+		TRUECRYPT_ENABLED = True
+
+NOW = datetime.datetime.now()
 
 #Handles arguments a function calls
 def main():
+	if TRUECRYPT_ENABLED:
+		mount_truecrypt()
+
 	if not diary_folder_exists():
-		print "Please specify a valid diary folder"
+		print("Please specify a valid diary folder")
 		return
 
 	action = ''
@@ -23,7 +43,17 @@ def main():
  	'ls': list,
  	'find': d_search,
  	'help': help,
+ 	'hide': dismount_truecrypt,
+	 'edit': edit,
 	}.get(action, help)(argument)
+
+def mount_truecrypt():
+	if not diary_folder_exists():
+		os.popen('%s %s' % (TRUECRYPT_BINARY, TRUECRYPT_VOLUME)).read()
+
+def dismount_truecrypt(arg):
+	if diary_folder_exists():
+		os.popen('%s %s -d' % (TRUECRYPT_BINARY, TRUECRYPT_VOLUME))
 
 #Add a diary entry via the text supplied
 def add(text):
@@ -31,6 +61,16 @@ def add(text):
 	with open(get_diary_folder()+todays_diary, "a") as today:
 		today.write(text+"\n")
 		print("Added diary entry")
+
+#Edit a diary entry via the text supplied
+def edit(diary_date=None):
+	todays_diary = datetime.date.today().strftime("%Y-%m-%d") + ".txt"
+	if diary_date==None:
+		diary_date = datetime.date.today().strftime("%Y-%m-%d")
+
+	abs_file = get_diary_folder() + diary_date + ".txt"
+	call([EDITOR, abs_file])
+
 
 #List a specific date or today
 def list(diary_date=None):
@@ -41,7 +81,7 @@ def list(diary_date=None):
 	abs_file = get_diary_folder() + diary_date + ".txt"
 	if os.path.isfile(abs_file):
 		diary_file = open(abs_file,'r').read()
-		print diary_file
+		print(diary_file)
 	else:
 		print('No diary entry specified and no entries for today')
 
@@ -67,10 +107,10 @@ def search_file(infile, pattern, text):
 			print ("%s -- %s" % (file_name[-1], line))
 
 def get_diary_folder():
-	if diary_folder:
-		if diary_folder[-1] == '/':
-			return diary_folder
-		return diary_folder + '/'
+	if DIARY_FOLDER:
+		if DIARY_FOLDER[-1] == '/':
+			return DIARY_FOLDER
+		return DIARY_FOLDER + '/'
 	return False
 
 def diary_folder_exists():
@@ -78,13 +118,14 @@ def diary_folder_exists():
 		return os.path.isdir(get_diary_folder())
 	return False
 
-
 def help(argument):
-	print "Usage:"
-	print "\tdiary.py add 'Today I went to the @shops and bought some cake for the #party'"
-	print "\tdiary.py find '#party'"
-	print "\tdiary.py ls"
-	print "\tdiary.py help"
+	print("Usage:")
+	print("\tdiary.py add 'Today I went to the @shops and bought some cake for the #party'")
+	print("\tdiary.py find 'search term'")
+	print("\tdiary.py ls - Lists current day or date specified in format YYYY-MM-DD")
+	print("\tdiary.py help - Displays this text")
+	print("\tdiary.py hide - Will unmount the truecrypt volume")
+	print("\tdiary.py edit - Edits current day or date specificed in format YYYY-MM-DD")
 
 if __name__ == '__main__':
   main()

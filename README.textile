@@ -10,6 +10,7 @@ Creates a separate diary entry for each file so 2012-02-29.txt.
 
 You can create, search and list todays entries easily.
 
+
 h2. Installation
 
 	1. Make sure python is installed.
@@ -18,3 +19,8 @@ h2. Installation
 	4. Edit diary.py and add the newly created folder into diary_folder setting at the top
 	5. Run python diary.py.
 	6. (Optional) Create a bash alias alias d='python /home/user/scripts/diary.py'
+
+h2. Truecrypt Support
+	1. Install truecrypt
+	2. Point the TRUECRYPT_VOLUME to your truecrypt vol
+	3. Specify in DIARY_FOLDER where truecrypt will mount the folder you want your diary entries to be stored.
