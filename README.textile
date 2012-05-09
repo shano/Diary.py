@@ -35,3 +35,4 @@ h2. Usage
 	diary.py hide - Will unmount the truecrypt volume
 	diary.py edit - Edits current day or date specificed in format
 	diary.py rand - Returns random element
+	diary.py stats - Prints monthly word-count of stats
