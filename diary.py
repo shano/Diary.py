@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, os, datetime, glob
+import sys, os, datetime, glob, re, calendar
 from subprocess import call
 
 # Set this to something if you wish to use truecrypt
@@ -38,18 +38,27 @@ def main():
 		argument=sys.argv[2]
 	else:
 		argument=None
-	
+
 	{'add': add,
- 	'ls': list,
- 	'find': d_search,
- 	'help': help,
- 	'hide': dismount_truecrypt,
-	 'edit': edit,
-	}.get(action, help)(argument)
+			'ls': list,
+			'find': d_search,
+			'help': help,
+			'hide': dismount_truecrypt,
+			'edit': edit,
+			'rand': random,
+			'stats': stats,
+			}.get(action, help)(argument)
 
 def mount_truecrypt():
 	if not diary_folder_exists():
 		os.popen('%s %s' % (TRUECRYPT_BINARY, TRUECRYPT_VOLUME)).read()
+
+def resolve_date(diary_date=None):
+	todays_diary = datetime.date.today().strftime("%Y-%m-%d") + ".txt"
+	if diary_date==None:
+		return datetime.date.today().strftime("%Y-%m-%d")
+	elif diary_date=='yes':
+		return datetime.date.today().strftime("%Y-%m-%d")
 
 def dismount_truecrypt(arg):
 	if diary_folder_exists():
@@ -61,6 +70,18 @@ def add(text):
 	with open(get_diary_folder()+todays_diary, "a") as today:
 		today.write(text+"\n")
 		print("Added diary entry")
+
+def random(text):
+	file_list = glob.glob(os.path.join(get_diary_folder(), '*.txt'))
+	file_list.sort()
+	from random import choice
+	random_date = choice(file_list)
+	if os.path.isfile(random_date):
+		diary_file = open(random_date,'r').read()
+		print(random_date)
+		print(diary_file)
+	else:
+		print('No diary entry specified and no entries for today')
 
 #Edit a diary entry via the text supplied
 def edit(diary_date=None):
@@ -97,6 +118,39 @@ def d_search(pattern):
 		if index > 0:
 			search_file(infile, pattern, text)
 
+#Build up stats by month and year
+def stats(text):
+	file_list = glob.glob(os.path.join(get_diary_folder(), '*.txt'))
+	file_list.sort()
+	ordered_list = {}
+	for infile in file_list:
+		abs_list = re.split('/',infile)
+		date = re.split('-', abs_list[-1][:-4])
+		file = open(infile,"r")
+		text = file.read()
+		tempwords = text.split(None)
+
+		if int(date[0]) in ordered_list:
+			if int(date[1]) in ordered_list[int(date[0])]:
+				ordered_list[int(date[0])][int(date[1])] += len(tempwords)
+			else:
+				ordered_list[int(date[0])][int(date[1])] = len(tempwords)
+		else:
+			ordered_list[int(date[0])] = {}
+			ordered_list[int(date[0])][int(date[1])] = len(tempwords)
+	years = sorted(ordered_list.iteritems())
+	print("Word Count By Month\n")
+	for year in years:
+		for month in year:
+			if isinstance(month, int):
+				print("%d" % month)
+			elif isinstance(month, dict):
+				for date, word_count in month.iteritems():
+					print("%s" % calendar.month_abbr[date], word_count)
+
+
+
+
 #Searches the specific file for text
 def search_file(infile, pattern, text):
 	file_name = infile.split('/')
@@ -122,10 +176,13 @@ def help(argument):
 	print("Usage:")
 	print("\tdiary.py add 'Today I went to the @shops and bought some cake for the #party'")
 	print("\tdiary.py find 'search term'")
-	print("\tdiary.py ls - Lists current day or date specified in format YYYY-MM-DD")
+	print("\tdiary.py ls - Lists current day or date format specified")
 	print("\tdiary.py help - Displays this text")
 	print("\tdiary.py hide - Will unmount the truecrypt volume")
-	print("\tdiary.py edit - Edits current day or date specificed in format YYYY-MM-DD")
+	print("\tdiary.py edit - Edits current day or date specificed in format")
+	print("\tdiary.py rand - Returns random element")
+	print("\tdiary.py stats - Prints monthly word-count of stats")
+	print("\tDate formats YYYY-MM-DD, yes(yesterday) or last mon,tue,wed,etc")
 
 if __name__ == '__main__':
-  main()
+	main()
