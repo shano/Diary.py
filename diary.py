@@ -182,7 +182,6 @@ def help(argument):
 	print("\tdiary.py edit - Edits current day or date specificed in format")
 	print("\tdiary.py rand - Returns random element")
 	print("\tdiary.py stats - Prints monthly word-count of stats")
-	print("\tDate formats YYYY-MM-DD, yes(yesterday) or last mon,tue,wed,etc")
 
 if __name__ == '__main__':
 	main()
